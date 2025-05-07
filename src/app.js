@@ -2,21 +2,25 @@ const express = require('express');
 
 const app = express();
 
-app.use("/test",(req,res)=> {
-    res.send('Response from test');
+
+app.get('/test',(req, res)=> {
+    res.send('Get Request from test');
 });
 
-app.use("/check",(req,res)=> {
-    res.send('Response from check');
+app.post('/test',(req, res)=> {
+    res.send('Post Request from test');
 });
 
-app.use("/hello",(req,res)=> {
-    res.send('Response from hello');
+app.put('/test',(req, res)=> {
+    res.send('Put Request from test');
 });
 
-// If we add this as a first route then all the rutes will match with this and prints Hello
-app.use("/",(req, res)=> {
-    res.send('Hello');
+app.patch('/test',(req, res)=> {
+    res.send('Patch Request from test');
+});
+
+app.delete('/test',(req, res)=> {
+    res.send('Delete Request from test');
 });
 
 app.listen(7777);
