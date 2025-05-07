@@ -1,25 +1,39 @@
 const express = require('express');
+const connectDB = require('./config/database');
+const User = require('./models/user');
 
 const app = express();
 
-/**
- * Added middleware seperate file and used it in app.js
- */
+app.post('/signup', (req, res) => {
+    const user = new User({
+        firstName: 'Harsha',
+        lastName: "vardhan",
+        age: 29,
+        gender: "Male",
+        emailId: "Harsha@gmail.com",
+        password: "@1235"
+    });
+    try {
+        user.save().then(() => {
+            console.log('User Saved');
+            res.send('User created succesfully');
+        })
+            .catch((err) => {
+                console.log('Error');
+                res.status(500).send('something went wrong');
+            })
+    } catch (err) {
+        res.status(500).send('something went wrong');
+    }
 
-
-app.get("/user", (req, res, next) => {
-    throw Error('Erorr');
-    // res.send('List of Users');
-});
-
-app.post("/user", (req, res, next) => {
-    res.send('Single user');
-});
-
-// This is a wild card error handling before this always use try catch block
-app.use('/', (err, req, res, next) => {
-    res.status(500).send('Something went wrong');
 })
 
-
-app.listen(7777);
+connectDB().then(()=>{
+    console.log('connection success');
+    app.listen(7777,()=> {
+        console.log('Listening to 7777!!')
+    });
+})
+.catch((err) => {
+    console.log(err);
+})
