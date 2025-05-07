@@ -6,6 +6,10 @@ app.use("/test",(req,res)=> {
     res.send('Response from test');
 });
 
+app.use("/check",(req,res)=> {
+    res.send('Response from check');
+});
+
 app.use("/hello",(req,res)=> {
     res.send('Response from hello');
 });
