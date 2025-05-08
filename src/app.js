@@ -1,17 +1,20 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwtTokem = require('jsonwebtoken');
 const connectDB = require('./config/database');
 const User = require('./models/user');
-const {validateSignup, validateLogin} = require('./utils/validation');
+const { validateSignup, validateLogin } = require('./utils/validation');
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 app.post('/signup', async (req, res) => {
-    
+
     try {
         validateSignup(req);
-        const {firstName, lastName, emailId, age, skills, gender, password} = req.body;
+        const { firstName, lastName, emailId, age, skills, gender, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({
             firstName,
@@ -28,10 +31,10 @@ app.post('/signup', async (req, res) => {
         })
             .catch((err) => {
                 console.log('Error');
-                res.status(500).send("Error"+err);
+                res.status(500).send("Error" + err);
             })
     } catch (err) {
-        res.status(500).send("Error"+err);
+        res.status(500).send("Error" + err);
     }
 
 });
@@ -80,12 +83,12 @@ app.delete('/user', async (req, res) => {
 app.patch('/user', async (req, res) => {
     const userEmail = req.body.emailId;
     const ALLOWED_UPDATES = ['password', 'skills'];
-    const isUpdateAllowed = Object.keys(req.body).every((key)=>ALLOWED_UPDATES.includes(key));
-    try{
-        if(!isUpdateAllowed) throw new Error('Update is not allowed');
-        await User.findOneAndUpdate({emailId: userEmail}, req.body,{runValidators:true});
+    const isUpdateAllowed = Object.keys(req.body).every((key) => ALLOWED_UPDATES.includes(key));
+    try {
+        if (!isUpdateAllowed) throw new Error('Update is not allowed');
+        await User.findOneAndUpdate({ emailId: userEmail }, req.body, { runValidators: true });
         res.send('user updated succesfully');
-    } catch(error) {
+    } catch (error) {
         res.status(500).send(error);
     }
 });
@@ -96,26 +99,44 @@ app.post("/login", async (req, res) => {
         validateLogin(req);
         userEmailId = req.body.emailId;
         console.log('userEmailId', userEmailId);
-         // Check for email
-         const user = await User.find({emailId:userEmailId});
-         console.log('Usr', user);
-         if(!user.length) {
+        // Check for email
+        const user = await User.find({ emailId: userEmailId });
+        console.log('Usr', user);
+        if (!user.length) {
             res.status(500).send("User not found");
-         } else {
-            const {password} =  req.body;
+        } else {
+            const { password } = req.body;
             console.log('password', password);
             const match = await bcrypt.compare(password, user[0].password);
             console.log('match', match);
-            if(match) {
+            if (match) {
+                const token = await jwtTokem.sign({ _id: user[0]._id }, "Harshavardhan");
+                console.log('token', token);
+                res.cookie('token ', token);
                 res.send('Login succesful');
             } else {
                 res.status(500).send("Invalid Credentials");
             }
-         }
+        }
     } catch (error) {
         res.status(500).send(error.message);
     }
 });
+
+app.post("/profile", async (req, res) => {
+    console.log('Cookies', req.cookies);
+    const { token } = req.cookies;
+    if (!token) {
+        res.status(500).send('Invalid token');
+    } else {
+        const decodedMessage = jwtTokem.verify(token, "Harshavardhan");
+        const user = await User.findById({ _id: decodedMessage._id });
+        if (!user) {
+            res.status(500).send('User not found');
+        }
+        res.send(user);
+    }
+})
 
 
 connectDB().then(() => {
