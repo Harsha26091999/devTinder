@@ -7,7 +7,12 @@ app.use(express.json());
 
 app.post('/signup', (req, res) => {
     const user = new User(req.body);
+    const areSkillsPresent = Object.keys(req.body).includes('skills');
+
     try {
+        if(areSkillsPresent && req.body.skills.length >3) {
+            throw new Error('Skills cannot be more than 3');
+        }
         user.save().then(() => {
             console.log('User Saved');
             res.send('User created succesfully');
@@ -65,11 +70,14 @@ app.delete('/user', async (req, res) => {
 
 app.patch('/user', async (req, res) => {
     const userEmail = req.body.emailId;
+    const ALLOWED_UPDATES = ['password', 'skills'];
+    const isUpdateAllowed = Object.keys(req.body).every((key)=>ALLOWED_UPDATES.includes(key));
     try{
+        if(!isUpdateAllowed) throw new Error('Update is not allowed');
         await User.findOneAndUpdate({emailId: userEmail}, req.body,{runValidators:true});
         res.send('user updated succesfully');
     } catch(error) {
-        res.status(500).send("Error"+error);
+        res.status(500).send(error);
     }
 })
 connectDB().then(() => {
