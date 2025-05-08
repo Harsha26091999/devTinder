@@ -9,6 +9,7 @@
   "author": "Harsha",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "express": "^4.17.1",
     "mongoose": "^6.13.8"
   }
