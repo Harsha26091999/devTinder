@@ -3,26 +3,51 @@ const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
     firstName: {
-        type: "String"
+        type: String,
+        required: [true, 'First name is required'],
+        minlength: [2, 'First name must be at least 2 characters'],
+        maxlength: [50, 'First name cannot exceed 50 characters'],
+        trim: true
     },
     lastName: {
-        type: "String"
+        type: String,
+        required: [true, 'Last name is required'],
+        minlength: [2, 'Last name must be at least 2 characters'],
+        maxlength: [50, 'Last name cannot exceed 50 characters'],
+        trim: true
     },
     age: {
-        type: "Number"
+        type: Number,
+        min: [0, 'Age cannot be negative'],
+        max: [120, 'Age seems unrealistic'],
+        required: [true, 'Age is required']
     },
     gender: {
-        type: "String"
+        type: String,
+        enum: ['Male', 'Female', 'Other'],
+        required: [true, 'Gender is required']
     },
     emailId: {
-        type: "String"
+        type: String,
+        required: [true, 'Email is required'],
+        unique: true,
+        trim: true,
+        lowercase: true,
+        match: [/\S+@\S+\.\S+/, 'Email format is invalid']
     },
     password: {
-        type: "String"
+        type: String,
+        required: [true, 'Password is required'],
+        minlength: [6, 'Password must be at least 6 characters'],
+        maxlength: [128, 'Password cannot exceed 128 characters']
     },
     isActive: {
-        type: "Boolean"
-    },
+        type: Boolean,
+        default: true
+    }
+}, {
+    timestamps: true
 });
+
 
 module.exports = mongoose.model('User', userSchema);

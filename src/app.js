@@ -14,10 +14,10 @@ app.post('/signup', (req, res) => {
         })
             .catch((err) => {
                 console.log('Error');
-                res.status(500).send('something went wrong');
+                res.status(500).send("Error"+err);
             })
     } catch (err) {
-        res.status(500).send('something went wrong');
+        res.status(500).send("Error"+err);
     }
 
 });
@@ -35,7 +35,7 @@ app.get('/getUser', (req, res) => {
             }
         })
     } catch (error) {
-        res.status(500).send("Error", error);
+        res.status(500).send(error);
     }
 });
 
@@ -49,10 +49,29 @@ app.get('/getAllUsers', (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).send("Error", error);
+        res.status(500).send(error);
     }
 })
 
+app.delete('/user', async (req, res) => {
+    const userId = req.body.userId;
+    try {
+        await User.findByIdAndDelete({ _id: userId });
+        res.send('user deleted succesfully');
+    } catch (error) {
+        res.status(500).send(error);
+    }
+})
+
+app.patch('/user', async (req, res) => {
+    const userEmail = req.body.emailId;
+    try{
+        await User.findOneAndUpdate({emailId: userEmail}, req.body,{runValidators:true});
+        res.send('user updated succesfully');
+    } catch(error) {
+        res.status(500).send("Error"+error);
+    }
+})
 connectDB().then(() => {
     console.log('connection success');
     app.listen(7777, () => {
