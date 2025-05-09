@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const jwtToken = require('jsonwebtoken');
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -38,8 +38,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Password is required'],
-        minlength: [6, 'Password must be at least 6 characters'],
-        maxlength: [128, 'Password cannot exceed 128 characters']
+            minlength: [6, 'Password must be at least 6 characters'],
+            maxlength: [128, 'Password cannot exceed 128 characters']
     },
     isActive: {
         type: Boolean,
@@ -52,6 +52,33 @@ const userSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+userSchema.methods.getJWToken = async function () {
+    const user = this
+    return await jwtToken.sign({ _id: user._id }, "Harshavardhan", { expiresIn: '1h' });
+}
+
+userSchema.methods.isValidUser = async function (userPassword) {
+    const user = this;
+    return await bcrypt.compare(userPassword, user.password);
+}
+
+userSchema.statics.verifyToken = function (token, secret = "Harshavardhan") {
+    try {
+      return jwtToken.verify(token, secret);
+    } catch (err) {
+      return null;
+    }
+  };
+
+  userSchema.statics.findByToken = async function (token) {
+    const decoded = this.verifyToken(token);
+    if (!decoded) return null;
+  
+    const user = await this.findById(decoded._id);
+    return user;
+  };
+  
 
 
 module.exports = mongoose.model('User', userSchema);
